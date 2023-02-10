@@ -1,0 +1,1036 @@
+swagger: '2.0'
+x-stoplight:
+  id: 6ql0yleq8ikfg
+info:
+  version: '1.0'
+  title: Keylane Finalize Service
+  description: |-
+    **The documentation contains the details to help one understand the API and its usages.**
+    **The document also helps you to test the URL; it provides options to test on below modes:**
+  contact:
+    name: Per Dyhrman
+    email: per.dyrman-ext@velliv.dk
+    url: 'https://velliv.dk'
+  license:
+    name: No license
+    url: 'https://velliv.dk'
+host: api.np.velliv.dk
+basePath: /
+schemes:
+  - https
+paths:
+  /partner/keylane/finalize/v1:
+    post:
+      summary: Finalize CaseData and documents from VRAPP
+      description: Finalize CaseData and documents from VRAPP
+      consumes:
+        - application/json
+      tags:
+        - Vrapp
+      parameters:
+        - name: RequestId
+          in: header
+          required: true
+          type: string
+          description: Uniq id for the single call
+        - name: X-ADVISOR-ID
+          in: header
+          required: true
+          type: string
+          description: The advisor id that can be verified
+        - name: X-ADVISOR-TENANT
+          in: header
+          required: true
+          type: string
+          description: 'Tenant id, for now Cvr number for Velliv or Tryg'
+        - name: SessionId
+          in: header
+          required: true
+          type: string
+          description: Uniq id for the session
+        - in: body
+          name: CaseData
+          required: false
+          schema:
+            $ref: '#/definitions/CaseDataType'
+          description: Request generated in VRAPP based on the selection in VRAPP
+      responses:
+        '202':
+          description: No content defined for this response
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/APIInvocationError'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/APIInvocationError'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/APIInvocationError'
+      security:
+        - oauth2Authentication:
+            - 'http://132.145.253.70/Read'
+      operationId: finalize
+    parameters: []
+securityDefinitions:
+  oauth2Authentication:
+    type: oauth2
+    description: |-
+      **The API is secured with OAuth2 Authentication.**
+      **Follow below steps to generate access token:**
+        1. _Get Client_Id, Client_Secret & Scopes_ 
+        2. _Use the **[OAuth Token API service](https://nprod-velliv.apiplatform.ocp.oraclecloud.com/developers/apis/OAuth_Token_Service/overview)** and POST the JSON request having keys - grant_type, client_id, client_secret & scope_
+        3. _Retrieve the access token_
+        4. _Send the access token in the header as 'Authorization: Bearer {generated token}'_
+    authorizationUrl: 'https://idcs-dc82260a04c24a08adb92034da1d5ec5.identity.oraclecloud.com/oauth2/v1/token'
+    tokenUrl: 'https://idcs-dc82260a04c24a08adb92034da1d5ec5.identity.oraclecloud.com/oauth2/v1/token'
+    flow: accessCode
+    scopes:
+      'http://132.145.253.70/Read': Read Access
+definitions:
+  PremiumType:
+    type: object
+    required:
+      - PaymentFrequency
+    properties:
+      PremiumAmount:
+        type: number
+        format: double
+      PremiumAdjustmentMethod:
+        type: string
+        enum:
+          - SalaryAdjusted
+          - IndexAdjusted
+          - NotAdjusted
+      PaymentFrequency:
+        type: string
+        enum:
+          - Monthly
+          - Quarterly
+          - SemiAnnually
+          - Annually
+      MainDueMonth:
+        type: string
+        enum:
+          - January
+          - February
+          - March
+          - April
+          - May
+          - June
+          - July
+          - August
+          - September
+          - October
+          - November
+          - December
+      PensionableSalary:
+        type: number
+        format: double
+      ContributionPercentage:
+        type: number
+        format: double
+  SinglePremiumType:
+    type: object
+    properties:
+      SinglePremiumAmount:
+        type: number
+        format: double
+      SinglePremiumDate:
+        type: string
+        format: date
+      SinglePremiumTaxCodePriority1:
+        $ref: '#/definitions/TaxCodeEnum'
+      SinglePremiumTaxCodePriority2:
+        $ref: '#/definitions/TaxCodeEnum'
+      SinglePremiumTaxCodePriority3:
+        $ref: '#/definitions/TaxCodeEnum'
+  TransferType:
+    type: object
+    properties:
+      TotalTransferAmount:
+        type: number
+        format: double
+      LifeAnnuityAmount:
+        type: number
+        format: double
+      AnnuityAmount:
+        type: number
+        format: double
+      NonTaxableLumpSumAmount:
+        type: number
+        format: double
+      TaxableLumpSumAmount:
+        type: number
+        format: double
+  AmountUsedElsewhereType:
+    type: object
+    properties:
+      PaidCurrentYear:
+        type: number
+        format: double
+      PaymentInFutureYears:
+        type: number
+        format: double
+      PensionPaymentCompany:
+        type: string
+        maxLength: 200
+#  Paragraph53aType:
+#    type: object
+#    properties:
+#      TaxableInOtherCountryThanDK:
+#        type: boolean
+#      TaxableInCountry:
+#        type: string
+#        maxLength: 50
+#      TaxIDNumber:
+#        type: string
+#        maxLength: 20
+  InvestmentChoicesType:
+    type: object
+    properties:
+      CompanyInvestmentPercentage:
+        type: number
+        format: double
+      PolicyHolderInvestmentPercentage:
+        type: number
+        format: double
+      CompanyInvestmentRiskProfile:
+        type: string
+      CompanyInvestmentManagement:
+        type: string
+      PolicyHolderInvestmentProfile:
+        type: string
+      PolicyHolderInvestmentManagement:
+        type: string
+      CustomerEquity:
+        type: string
+  TaxCodeEnum:
+    type: string
+    enum:
+      - '1'
+      - '2'
+      - '3'
+      - '5'
+      - '7'
+      - '9'
+      - '33'
+      - '51'
+  TaxCodeSharedEnum:
+    type: string
+    enum:
+      - '1'
+      - '2'
+      - '3'
+      - '5'
+      - '7'
+      - '9'
+      - '33'
+      - '51'
+      - Shared
+  CoverageType:
+    type: object
+    properties:
+      BenefitAmount:
+        type: number
+        format: double
+      BenefitPercentage:
+        type: number
+        format: double
+      TaxCode:
+        $ref: '#/definitions/TaxCodeEnum'
+  DisabilityCoverageType:
+    type: object
+    properties:
+      BenefitAmount:
+        type: number
+        format: double
+      BenefitPercentage:
+        type: number
+        format: double
+      SalaryScale:
+        type: boolean
+      TaxCode:
+        $ref: '#/definitions/TaxCodeEnum'
+  RiskCoveragesChoicesType:
+    type: object
+    properties:
+      AddedRiskCoverages:
+        $ref: '#/definitions/RiskCoveragesType'
+      ChangedRiskCoverages:
+        $ref: '#/definitions/RiskCoveragesType'
+      RemovedRiskCoverages:
+        type: object
+        properties:
+          CriticalIllnessChildrenSum:
+            type: boolean
+          CriticalIllnessSum:
+            type: boolean
+          DeathAnnuity:
+            type: boolean
+          DeathChildrenAnnuity:
+            type: boolean
+          DeathChildrenSum:
+            type: boolean
+          DeathSum:
+            type: boolean
+          DisabilityAnnuity:
+            type: boolean
+          DisabilitySum:
+            type: boolean
+          DisabilitySupplementaryAnnuity:
+            type: boolean
+          TradeDisabilityAnnuity:
+            type: boolean
+          TradeDisabilitySum:
+            type: boolean
+    x-stoplight:
+      id: aaf4bbdab446a
+  RiskCoveragesType:
+    type: object
+    properties:
+      CriticalIllnessChildrenSum:
+        $ref: '#/definitions/CoverageType'
+      CriticalIllnessSum:
+        $ref: '#/definitions/CoverageType'
+      DeathAnnuity:
+        $ref: '#/definitions/CoverageType'
+      DeathChildrenAnnuity:
+        $ref: '#/definitions/CoverageType'
+      DeathChildrenSum:
+        $ref: '#/definitions/CoverageType'
+      DeathSum:
+        $ref: '#/definitions/CoverageType'
+      DisabilityAnnuity:
+        $ref: '#/definitions/DisabilityCoverageType'
+      DisabilitySum:
+        $ref: '#/definitions/CoverageType'
+      DisabilitySupplementaryAnnuity:
+        $ref: '#/definitions/CoverageType'
+      TradeDisabilityAnnuity:
+        $ref: '#/definitions/DisabilityCoverageType'
+      TradeDisabilitySum:
+        $ref: '#/definitions/CoverageType'
+  ExternalCoverageType:
+    type: object
+    properties:
+      CoverageId:
+        description: Maximum 8 digits coverage Id for external health insurance
+        type: string
+  AnnuityDurationType:
+    type: object
+    properties:
+      LifeInsuranceAnnuityDuration:
+        type: number
+      SavingsAnnuityDuration:
+        type: number
+  RetirementAgeType:
+    type: object
+    properties:
+      ExpectedRetirementAge:
+        description: Used for prognosis calculations (can be "FPA")
+        type: string
+        pattern: '(1?[0-9][0-9]|FPA)'
+      IndividualRetirementAge:
+        description: 'At which date the customer expects to pension, on an individual policy'
+        type: string
+        pattern: '(1?[0-9][0-9]|FPA)'
+  ReallocationBetweenTaxCodesType:
+    type: object
+    properties:
+      ReallocationBetweenTaxCodes:
+        type: array
+        items:
+          type: object
+          properties:
+            FromTaxCodes:
+              type: array
+              items:
+                type: object
+                properties:
+                  TaxCode:
+                    $ref: '#/definitions/TaxCodeEnum'
+                required:
+                  - TaxCode
+              minItems: 1
+            ReallocationPercentage:
+              type: number
+            ToTaxCode:
+              $ref: '#/definitions/TaxCodeEnum'
+          required:
+            - FromTaxCodes
+            - ReallocationPercentage
+            - ToTaxCode
+        minItems: 1
+  CurrentAndFutureSavingsType:
+    type: object
+    properties:
+      CompanyInvestmentChoices:
+        type: object
+        properties:
+          CompanyInvestmentType:
+            type: string
+            enum:
+              - VP Aftryk Høj
+              - VP Aftryk Lav
+              - VP Aftryk Mellem
+              - VP Aktiv Høj
+              - VP Aktiv Lav
+              - VP Aktiv Mellem
+              - VP Index Høj
+              - VP Index Lav
+              - VP Index Mellem
+  ExternalCoveragesChoicesType:
+    type: object
+    properties:
+      AddedExternalCoverages:
+        type: array
+        items:
+          $ref: '#/definitions/ExternalCoverageType'
+        minItems: 1
+      RemovedExternalCoverages:
+        type: array
+        items:
+          $ref: '#/definitions/ExternalCoverageType'
+        minItems: 1
+    x-internal: false
+  FundDistributionsType:
+    type: array
+    items:
+      type: object
+      properties:
+        FundDistribution:
+          type: array
+          items:
+            type: object
+            properties:
+              FundId:
+                type: string
+              Percentage:
+                type: number
+            required:
+              - FundId
+              - Percentage
+          minItems: 1
+        TaxCode:
+          $ref: '#/definitions/TaxCodeEnum'
+      required:
+        - FundDistribution
+        - TaxCode
+    minItems: 1
+  SavingsEnvironmentDistributionType:
+    type: object
+    properties:
+      CompanyInvestmentPercentage:
+        type: number
+      ContingentMeanInterestPercentage:
+        type: number
+      PolicyHolderInvestmentPercentage:
+        type: number
+  CurrentSavingsType:
+    type: object
+    properties:
+      PolicyHolderInvestmentChoices:
+        $ref: '#/definitions/FundDistributionsType'
+      ReallocationBetweenSavingsEnvironmentsPerPolicyPartAndTaxcode:
+        type: array
+        items:
+          type: object
+          properties:
+            PaymentType:
+              type: string
+              enum:
+                - Shared
+                - Sum
+                - Instalments
+                - ExpiringAnnuity
+                - LifetimeAnnuity
+            PolicyPart:
+              type: string
+              enum:
+                - Shared
+                - AMP
+                - Mandatory
+                - Optional
+                - Private
+            SavingsEnvironmentDistribution:
+              $ref: '#/definitions/SavingsEnvironmentDistributionType'
+            TaxCodeShared:
+              $ref: '#/definitions/TaxCodeSharedEnum'
+          required:
+            - PaymentType
+            - PolicyPart
+            - SavingsEnvironmentDistribution
+            - TaxCode
+        minItems: 1
+      UseSavingsDistributionForFuturePayments:
+        type: boolean
+  PremiumAmountType:
+    type: object
+    properties:
+      MandatoryAmount:
+        type: number
+        format: double
+      OptionalAmount:
+        type: number
+        format: double
+      PremiumWithoutWaiverOfPremiumAmount:
+        type: number
+        format: double
+  PremiumPercentageType:
+    type: object
+    properties:
+      MandatoryPercentage:
+        type: number
+        format: double
+      OptionalPercentage:
+        type: number
+        format: double
+      PremiumWithoutWaiverOfPremiumPercentage:
+        type: number
+        format: double
+  PremiumTypeChange:
+    type: object
+    properties:
+      MainDueMonth:
+        type: string
+        enum:
+          - January
+          - February
+          - March
+          - April
+          - May
+          - June
+          - July
+          - August
+          - September
+          - October
+          - November
+          - December
+      PremiumAdjustmentMethod:
+        type: string
+        enum:
+          - SalaryAdjusted
+          - IndexAdjusted
+          - NotAdjusted
+      PremiumAmount:
+        $ref: '#/definitions/PremiumAmountType'
+      PremiumFrequency:
+        type: string
+        enum:
+          - Monthly
+          - Quarterly
+          - SemiAnnually
+          - Annually
+      PremiumPercentage:
+        $ref: '#/definitions/PremiumPercentageType'
+  FutureSavingsType:
+    type: object
+    properties:
+      CustomerEquitySelected:
+        type: boolean
+      PolicyHolderInvestmentChoices:
+        $ref: '#/definitions/FundDistributionsType'
+      SavingsEnvironmentDistributionPerPolicyPart:
+        type: array
+        items:
+          type: object
+          properties:
+            PolicyPart:
+              type: string
+              enum:
+                - Shared
+                - AMP
+                - Mandatory
+                - Optional
+                - Private
+            SavingsEnvironmentDistribution:
+              $ref: '#/definitions/SavingsEnvironmentDistributionType'
+          required:
+            - PolicyPart
+            - SavingsEnvironmentDistribution
+        minItems: 1
+  CompanyPaymentType:
+    type: object
+    properties:
+      Amount:
+        type: number
+        format: double
+      CompanyText:
+        type: string
+  PaymentOtherLumpSumListType:
+    type: array
+    minItems: 1
+    items:
+      type: object
+      properties:
+        PaymentOtherLumpSum:
+          $ref: '#/definitions/CompanyPaymentType'
+      required:
+        - PaymentOtherLumpSum
+  EsgDataListType:
+    type: array
+    minItems: 1
+    items:
+      type: object
+      properties:
+        Language:
+          example: DA
+          type: string
+        InvestmentManagementProfile:
+          example: Aftryk
+          type: string
+        InvestmentRiskProfile:
+          example: Low
+          type: string
+        InvestmentEnvironment:
+          example: CompanyInvestment
+          type: string
+        PureStock:
+          example: false
+          type: boolean
+        VaekstOpsparing:
+          example: false
+          type: boolean
+        LpSelvvalg:
+          example: false
+          type: boolean
+  PaymentOtherAnnuityListType:
+    type: array
+    minItems: 1
+    items:
+      type: object
+      properties:
+        PaymentOtherAnnuity:
+          $ref: '#/definitions/CompanyPaymentType'
+      required:
+        - PaymentOtherAnnuity
+  PaymentsInPeriodType:
+    type: object
+    properties:
+      FixedAmountAnnuity:
+        type: number
+      FixedAmountLumpsum:
+        type: number
+      PaymentOtherAnnuityList:
+        $ref: '#/definitions/PaymentOtherAnnuityListType'
+      PaymentOtherLumpSumList:
+        $ref: '#/definitions/PaymentOtherLumpSumListType'
+  TaxCodeChoiceType:
+    type: object
+    properties:
+      TaxCodeOptimization:
+        type: object
+        properties:
+          FutureYears:
+            $ref: '#/definitions/PaymentsInPeriodType'
+          PresentAndFutureYears:
+            $ref: '#/definitions/PaymentsInPeriodType'
+          PresentYear:
+            $ref: '#/definitions/PaymentsInPeriodType'
+          RemoveAllEntries:
+            type: boolean
+      TaxCodePriorities:
+        type: object
+        properties:
+          TaxCodePriority1:
+            $ref: '#/definitions/TaxCodeEnum'
+          TaxCodePriority2:
+            $ref: '#/definitions/TaxCodeEnum'
+          TaxCodePriority3:
+            $ref: '#/definitions/TaxCodeEnum'
+      HasSpecialLmcExemption:
+        type: boolean
+      Is53a:
+        type: boolean
+  OccupationDetailsType:
+    type: object
+    properties:
+      OccupationCvr:
+        description: Employers CVR number
+        type: string
+        pattern: '[0-9]{8}'
+      OccupationId:
+        description: 'Risk group according to the type of employment the customer acquires within, and the hazards associated with their employment.'
+        type: string
+        enum:
+          - '00'
+          - '01'
+          - '02'
+          - '03'
+          - '04'
+          - '05'
+  RegistrationType:
+    type: object
+    properties:
+      CompanyId:
+        description: 'A six digit number, which is unique to a CVR in N16 base'
+        type: string
+      EmployeeGroupId:
+        description: Two digit ID which can be found in N16 under companyId Defines which part of the agreement the customer is placed
+        type: string
+      RegistrationId:
+        description: A companyId can have several registrationId's that has different agreements
+        type: string
+      CollectiveAgreementId:
+        description: 'If the agreement is subject to a collective agreement like ''DHOSHKS'', ''DAINALL'', ''KRIAFKA'''
+        example: DHOSHKS
+        type: string
+  IndividualRegistrationType:
+    type: object
+    properties:
+      SegmentId:
+        description: 6 digit ID for an individual segment
+        type: string
+      SubsegmentId:
+        description: 2 digit ID for an individual sub segment
+        type: string
+      PensionSchemeTypeId:
+        description: 2 digit ID for an individual agreement type
+        type: string
+  EstablishmentMandatoryType:
+    type: object
+    properties:
+      Paragraph53a:
+        description: Whether the policy should be §53A or not
+        type: boolean
+      IsPensionSupplierChange:
+        description: If Velliv takes over company from another pension supplier
+        default: false
+        type: boolean
+      OnLeave:
+        description: Whether customer is on leave or not
+        type: boolean
+      EndOfLeaveDate:
+        description: 'If customer is on leave, and date for end of leave is known'
+        type: string
+        format: date
+      IsFlexJob:
+        description: If customer has flex job
+        type: boolean
+    x-stoplight:
+      id: 836792ae75e21
+
+  EstablishmentOtherType:
+    type: object
+    properties:
+      Beneficiary:
+        type: string
+        enum:
+          - ESTATE
+          - NEXTOFKIN
+          - OTHER
+  ChangeType:
+    type: object
+    properties:
+      CoverageChoice:
+        type: object
+        properties:
+          RiskCoverages:
+            $ref: '#/definitions/RiskCoveragesChoicesType'
+          ExternalCoverages:
+            $ref: '#/definitions/ExternalCoveragesChoicesType'
+      CustomerChoice:
+        type: object
+        properties:
+          AnnuityDuration:
+            $ref: '#/definitions/AnnuityDurationType'
+          RetirementAge:
+            $ref: '#/definitions/RetirementAgeType'
+          ReallocationBetweenTaxCodes:
+            $ref: '#/definitions/ReallocationBetweenTaxCodesType'
+      InvestmentChoice:
+        type: object
+        properties:
+          CurrentAndFutureSavings:
+            $ref: '#/definitions/CurrentAndFutureSavingsType'
+          CurrentSavings:
+            $ref: '#/definitions/CurrentSavingsType'
+      PremiumChoice:
+        type: object
+        properties:
+          Premium:
+            $ref: '#/definitions/PremiumTypeChange'
+          FutureSavings:
+            $ref: '#/definitions/FutureSavingsType'
+          TaxCodeChoice:
+            $ref: '#/definitions/TaxCodeChoiceType'
+      SalaryDependencis:
+        description: Used for mandatory company
+        $ref: '#/definitions/SalaryDependencisType'        
+      MiscPensionBrokerData:
+        type: object
+        properties:
+          ApplicationNumber:
+            type: string
+          IsPensionSupplierChange:
+            type: boolean
+      RequestType:
+        type: string
+        enum:
+          - Alteration
+          - SalaryAdjustment
+          - ChangeOfPensionscheme
+  OfferType:
+    type: object
+    properties:
+      RetirementAge:
+        $ref: '#/definitions/RetirementAgeType'
+      Premium:
+        $ref: '#/definitions/PremiumType'
+      SinglePremium:
+        $ref: '#/definitions/SinglePremiumType'
+      Transfer:
+        $ref: '#/definitions/TransferType'
+      SavingsAnnuityDuration:
+        type: number
+        format: double
+      PaymentOtherAnnuity:
+        $ref: '#/definitions/AmountUsedElsewhereType'
+      PaymentOtherLumpSum:
+        $ref: '#/definitions/AmountUsedElsewhereType'
+#      Paragraph53a:
+#        $ref: '#/definitions/Paragraph53aType'
+      TaxReportingKind:
+        type: string
+        enum:
+          - Private
+          - Company
+      ContributionInvestmentChoices:
+        $ref: '#/definitions/InvestmentChoicesType'
+      SinglePremiumInvestmentChoices:
+        $ref: '#/definitions/InvestmentChoicesType'
+      IsWithRiskCoverages:
+        type: boolean
+      Coverages:
+        type: object
+        properties:
+          WaiverOfPremium:
+            $ref: '#/definitions/CoverageType'
+          DisabilityAnnuity:
+            $ref: '#/definitions/DisabilityCoverageType'
+          DisabilitySum:
+            $ref: '#/definitions/CoverageType'
+          Death:
+            $ref: '#/definitions/CoverageType'
+          DeathChildren:
+            $ref: '#/definitions/CoverageType'
+          CriticalIllness:
+            $ref: '#/definitions/CoverageType'
+          IsIndexationOfBenefitsForIndividual:
+            type: boolean
+          HasDisbursementToEmployer:
+            type: boolean
+      TaxCodePriority1:
+        $ref: '#/definitions/TaxCodeEnum'
+      TaxCodePriority2:
+        $ref: '#/definitions/TaxCodeEnum'
+      TaxCodePriority3:
+        $ref: '#/definitions/TaxCodeEnum'
+    required:
+      - TaxReportingKind
+      - Coverages
+    x-stoplight:
+      id: b05e1ea026c59
+
+  KeylaneDataType:
+    type: object
+    properties:
+      Baseline:
+        description: base64encoded json
+        type: string
+      Finalized:
+        description: base64encoded json
+        type: string
+      Delta:
+        description: base64encoded json
+        type: string
+      CaseId:
+        description: c316e412-fb4a-40cc-b276-45872a4cbd5e
+        type: string
+      ScenarioId:
+        description: c316e412-fb4a-40cc-b276-45872a4cbd5e
+        type: string
+  CaseBaseDataType:
+    type: object
+    properties:
+      CaseId:
+        description: c316e412-fb4a-40cc-b276-45872a4cbd5e
+        type: string
+      CprNumber:
+        description: '1231231212'
+        type: string
+      PolicyNumber:
+        description: '2342342342'
+        type: string
+      Dates:
+        type: object
+        properties:
+          AlterationDate:
+            description: Fill out with change
+            type: string
+            format: date
+          MeetingDate:
+            description: Fill out with change
+            type: string
+            format: date
+          EstablishmentDate:
+            description: Fill out with offer
+            type: string
+            format: date
+      CompanyData:
+        type: object
+        properties:
+          CompanyCvr:
+            description: 'Fill out with change, is this also em'
+            type: string
+            pattern: '[0-9]{8}'
+          EmployerCVRNumber:
+            description: Employers CVR number (from offer)
+            type: string
+            pattern: '[0-9]{8}'
+          OccupationDetails:
+            description: Is this only needed for Company stuff?
+            $ref: '#/definitions/OccupationDetailsType'
+      AdvisorData:
+        type: object
+        properties:
+          AdvisorName: 
+            description: From EstOther
+            type: string
+          AdvisorCvr:
+            description: From OfferData and EstOther
+            type: string
+            pattern: '[0-9]{8}'
+
+
+      ProductData:
+        type: object
+        properties:
+          ProductExternalId:
+            description: Should be used in ALL (added)
+            type: string
+          ProductConcept:
+            description: Should be used in ALL
+            type: string
+            enum:
+              - CorporateChange
+              - CorporateEtsChange
+              - CorporateLmpChange
+              - IndividualCompanyChange
+              - IndividualPrivateChange
+              - CorporateEstablishment
+              - CorporateEtsEstablishment
+              - CorporateLmpEstablishment
+              - IndividualCompanyEstablishment
+              - IndividualPrivateEstablishment
+          ProductType:
+            description: From OfferBaseData
+            type: string
+            enum:
+              - ETS
+              - LANDMANDSPENSION
+              - PRIVATE
+              - INDIVIDUALCOMPANY
+      SalaryDependencis:
+        description: Used for mandatory company
+        $ref: '#/definitions/SalaryDependencisType'        
+  SalaryDependencisType:
+    type: object
+    properties:
+      BeneficialSalary:
+        type: number
+      PensionableSalary:
+        type: number
+    x-stoplight:
+      id: 509a3322bebb1
+
+  CaseDataType:
+    type: object
+    x-stoplight:
+      id: fcb11f92504a6
+    properties:
+      CaseDataRequest:
+        type: object
+        properties:
+          KeylaneData:
+            $ref: '#/definitions/KeylaneDataType'
+          CaseBaseData:
+            $ref: '#/definitions/CaseBaseDataType'
+          Change:
+            $ref: '#/definitions/ChangeType'
+          Offer:
+            $ref: '#/definitions/OfferType'
+          EstablishmentMandatory:
+            $ref: '#/definitions/EstablishmentMandatoryType'
+          EstablishmentOther:
+            $ref: '#/definitions/EstablishmentOtherType'
+          DocumentsList:
+            $ref: '#/definitions/DocumentsListType'
+    required:
+      - CaseDataRequest
+
+  APIInvocationError:
+    type: object
+    required:
+      - detail
+      - errorCode
+      - errorDetails
+      - title
+      - type
+    properties:
+      type:
+        type: string
+        default: APPLICATION
+      title:
+        type: string
+        default: Internal Server Error
+      detail:
+        type: string
+      errorCode:
+        type: string
+        default: '500'
+      errorDetails:
+        type: array
+        items:
+          type: object
+          properties:
+            type:
+              type: string
+            instance:
+              type: string
+              default: '2017-04-18T00:00:00.000+02:00'
+            title:
+              type: string
+            errorPath:
+              type: string
+            errorCode:
+              type: string
+          required:
+            - errorCode
+            - errorPath
+            - instance
+            - title
+            - type
+        minItems: 1
+  
+  DocumentsListType:
+    type: array
+    items:
+      type: object
+      properties:
+        FileName": 
+          description: Meeting report - 493930404034049dfskdkd943949393 999393.PDF
+          type: string
+        FileType": 
+          description: PDF
+          type: string
+        FileContent": 
+          description: JVBERi0xLjcKCjQgMCBvYmoKKElkZW50aXR5KQplbmRvYmoKNSAwIG9iagooQWRvYmUpCmVuZG9iago4IDAgb2JqCjw8Ci9GaWx0ZXIgL0ZsYXRlRGVjb2RlCi9MZW5ndGggMzQ4NTUKL0xlbmd0aDEgODI4NDgKL1R5cGUgL1N0cmVhbQo+PgpzdHJlYW0KeJzsfQdAVEfX9ty7hWV3gaU3kYUFROrSBFRkqYKIdAUrvehSAtg1InbsvSsaY4lRF7Bg16iJJZZo1DRjTDTGKLEklqiw/5k798KKmvJ+7/t///d/2etznzNzZ+aeOXPmzNy7qyIKIWQGJz5SRabE9pw6x9wCoUWNCNnt7BkZFb3v2fHPEKpXI8Sr7pmYkCLdVDQdoV0PECp80jMlLTx3blksojr+hJBTenxUck9kAS1SESpoVZqQ4u0bn7A7EyHqJKQzc4qzyrJcN36LkFcZtCfKGVEpv9f707EI9YtESBCdX1ZQnOCV9Bghn1EIGbgVZFWUITukAH02Q31ZgXp0/tF+KzsgNHAWQub1hXlZub/OdsiD9nvD9S6FkKEfI34K6cmQdiosrhy1Yon/fYRoV4Q8YtSlOVkfqQ4FIFQO+l....
+          type: string
+        DocumentType:  
+          description: meeting_report 
+          type: string
+x-internal: false
